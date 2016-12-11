@@ -13,7 +13,8 @@ def logged_user():
 @app.route('/')
 @app.route('/index')
 def index():
-    # app.logger.debug(app.config)  # @TODO print in debug mode
+    app.logger.debug(app.config)  # @TODO print in debug mode
+    app.logger.debug(app.url_map)  # @TODO print in debug mode
     return render_template('index.html', new_bookmarks=Bookmark.newest(5))
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -30,6 +31,10 @@ def add():
         return redirect(url_for('index'))
     return render_template('add.html', form=form)
 
+@app.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('user.html', user=user)
 
 @app.errorhandler(404)
 def page_not_found(e):
