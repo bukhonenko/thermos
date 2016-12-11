@@ -1,0 +1,12 @@
+*.pyc
+*∼
+*.egg-info
+*.mo
+*.egg
+*.db*
+thermos/static/img/
+thermo-flask
+*.log
+flask
+.idea
+
