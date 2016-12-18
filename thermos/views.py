@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import login_required, login_user
+from flask_login import login_required, login_user, logout_user, current_user
 
 from thermos import app, db, login_manager
 from forms import BookmarkForm, LoginForm
@@ -14,7 +14,7 @@ def load_user(userid):
 @app.route('/')
 @app.route('/index')
 def index():
-    app.logger.debug(app.config)  # @TODO print in debug mode
+    # app.logger.debug(app.config)  # @TODO print in debug mode
     app.logger.debug(app.url_map)  # @TODO print in debug mode
     return render_template('index.html', new_bookmarks=Bookmark.newest(5))
 
@@ -26,7 +26,7 @@ def add():
     if form.validate_on_submit():
         url = form.url.data
         description = form.description.data
-        # bm = Bookmark(user=logged_user(), url=url, description=description)
+        bm = Bookmark(user=current_user(), url=url, description=description)
         db.session.add(bm) # TODO the object has been aleady added through manage.initdb
         db.session.commit()
         flash('Stored bookmark "{}"'.format(url))
@@ -54,6 +54,11 @@ def login():
         flash('Incorect username or password.')
     return render_template('login.html', form=form)
 
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def page_not_found(e):
