@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, login_user, logout_user, current_user
 
 from thermos import app, db, login_manager
@@ -26,13 +26,29 @@ def add():
     if form.validate_on_submit():
         url = form.url.data
         description = form.description.data
-        bm = Bookmark(user=current_user(), url=url, description=description)
+        bm = Bookmark(user=current_user, url=url, description=description)
         db.session.add(bm) # TODO the object has been aleady added through manage.initdb
         db.session.commit()
         flash('Stored bookmark "{}"'.format(url))
         app.logger.debug('strored url: ' + url) # @TODO print in debug mode
         return redirect(url_for('index'))
-    return render_template('add.html', form=form)
+    return render_template('bookmark_form.html', form=form, title='Add a bookmark')
+
+
+@app.route('/edit/<int:bookmark_id>', methods=['GET', 'POST'])
+@login_required
+def edit_bookmark(bookmark_id):
+    bookmark = Bookmark.query.get_or_404(bookmark_id)
+    if current_user != bookmark.user:
+        abort(403)
+    form = BookmarkForm(obj=bookmark)
+    if form.validate_on_submit():
+        form.populate_obj(bookmark)
+        db.session.commit()
+        flash('Stored bookmark "{}"'.format(bookmark.description))
+        return redirect(url_for('user', username=current_user.username))
+    return render_template('bookmark_form.html', form=form, title='Edit bookmark')
+
 
 
 @app.route('/user/<username>')
@@ -73,6 +89,12 @@ def signup():
         flash('Welcome, {}! Please login.'.format(user.username))
         return redirect(url_for('login'))
     return render_template("signup.html", form=form)
+
+
+@app.errorhandler(403)
+def not_allowed(e):
+    return render_template('403.html'), 403
+
 
 @app.errorhandler(404)
 def page_not_found(e):

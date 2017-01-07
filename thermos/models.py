@@ -18,7 +18,7 @@ class Bookmark(db.Model):
         return Bookmark.query.order_by(desc(Bookmark.date)).limit(num)
 
     def __repr__(self):
-        return "<Bookmark '{}': '{}'>".format(self.url, self.descriprion)
+        return "<Bookmark '{}': '{}'>".format(self.url, self.description)
 
 
 class User(db.Model, UserMixin):

@@ -5,6 +5,7 @@ flask-sqlalchemy
 sqlalchemy-migrate
 flask-whooshalchemy
 flask-wtf
+flask-moment
 flask-babel
 Flask-Script
 guess_language
